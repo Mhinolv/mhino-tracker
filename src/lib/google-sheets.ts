@@ -1,6 +1,4 @@
 import { google } from 'googleapis';
-import { readFileSync } from 'fs';
-import { join } from 'path';
 
 export interface LocationData {
   id: string;
@@ -13,33 +11,10 @@ export interface LocationData {
 
 export async function getLocationHistory(): Promise<LocationData[]> {
   try {
-    // Setup authentication using service account
-    const serviceAccountJson = process.env.GOOGLE_SERVICE_ACCOUNT_JSON;
-    const serviceAccountFile = process.env.GOOGLE_SERVICE_ACCOUNT_FILE;
-    let auth;
-
-    if (serviceAccountJson) {
-      // Use service account JSON from environment variable (for production)
-      const credentials = JSON.parse(serviceAccountJson);
-      auth = new google.auth.GoogleAuth({
-        credentials,
-        scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-      });
-    } else if (serviceAccountFile) {
-      // Use service account file (for local development)
-      const credentials = JSON.parse(
-        readFileSync(join(process.cwd(), serviceAccountFile), 'utf8')
-      );
-      auth = new google.auth.GoogleAuth({
-        credentials,
-        scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-      });
-    } else if (process.env.GOOGLE_SHEETS_API_KEY) {
-      // Fallback to API key authentication
-      auth = process.env.GOOGLE_SHEETS_API_KEY;
-    } else {
-      throw new Error('No Google authentication configured. Please set GOOGLE_SERVICE_ACCOUNT_JSON, GOOGLE_SERVICE_ACCOUNT_FILE, or GOOGLE_SHEETS_API_KEY');
-    }
+    // Setup authentication using Google Application Default Credentials
+    const auth = new google.auth.GoogleAuth({
+      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+    });
 
     const sheets = google.sheets({
       version: 'v4',
