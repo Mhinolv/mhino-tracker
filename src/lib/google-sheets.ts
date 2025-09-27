@@ -11,8 +11,37 @@ export interface LocationData {
 
 export async function getLocationHistory(): Promise<LocationData[]> {
   try {
-    // Setup authentication using service account credentials from environment variable
-    const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON || '{}');
+    let credentials;
+    
+    // Try to get credentials from environment variable first
+    if (process.env.GOOGLE_SERVICE_ACCOUNT_JSON) {
+      try {
+        credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+      } catch (parseError) {
+        console.error('Failed to parse GOOGLE_SERVICE_ACCOUNT_JSON:', parseError);
+        throw new Error('Invalid GOOGLE_SERVICE_ACCOUNT_JSON format');
+      }
+    } else if (process.env.GOOGLE_SERVICE_ACCOUNT_FILE) {
+      // Fallback to reading from file (for local development)
+      const fs = await import('fs');
+      const path = await import('path');
+      const credentialsPath = path.resolve(process.env.GOOGLE_SERVICE_ACCOUNT_FILE);
+      try {
+        const credentialsData = fs.readFileSync(credentialsPath, 'utf8');
+        credentials = JSON.parse(credentialsData);
+      } catch (fileError) {
+        console.error('Failed to read credentials file:', fileError);
+        throw new Error('Failed to read credentials file');
+      }
+    } else {
+      throw new Error('No Google credentials found. Set GOOGLE_SERVICE_ACCOUNT_JSON or GOOGLE_SERVICE_ACCOUNT_FILE');
+    }
+
+    // Validate credentials
+    if (!credentials.client_email) {
+      throw new Error('Google credentials missing client_email field');
+    }
+
     const auth = new google.auth.GoogleAuth({
       credentials: credentials,
       scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
