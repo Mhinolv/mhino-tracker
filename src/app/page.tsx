@@ -49,7 +49,7 @@ export default function Home() {
         <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-4">
           <p className="text-destructive">Error: {error}</p>
           <p className="text-sm text-muted-foreground mt-2">
-            Make sure you've configured your Google Sheets API key and Sheet ID in the .env.local file.
+            Make sure you&apos;ve configured your Google Sheets API key and Sheet ID in the .env.local file.
           </p>
         </div>
       )}

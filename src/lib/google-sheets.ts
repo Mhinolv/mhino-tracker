@@ -11,8 +11,10 @@ export interface LocationData {
 
 export async function getLocationHistory(): Promise<LocationData[]> {
   try {
-    // Setup authentication using Google Application Default Credentials
+    // Setup authentication using service account credentials from environment variable
+    const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON || '{}');
     const auth = new google.auth.GoogleAuth({
+      credentials: credentials,
       scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
     });
 
